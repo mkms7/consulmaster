@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>目指せ！！コンサルマスター！！</title>
+  <!-- Tailwind CSS (デザイン用) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React本体 -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <!-- Babel (JSXをブラウザで動かすため) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // カスタムスタイル
+    const customStyles = `
+      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
+      body { font-family: 'Noto Sans JP', sans-serif; }
+      .logo-text {
+        background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.4));
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+      .float-anim { animation: floating 3s ease-in-out infinite; }
+      @keyframes floating {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+      }
+    `;
+
+    const LoginScreen = ({ onLogin }) => {
+      const [staffId, setStaffId] = useState('');
+      const [error, setError] = useState('');
+
+      const handleLogin = (e) => {
+        e.preventDefault();
+        if (staffId.startsWith('0')) {
+          setError('※担当者番号は0から始まらない数字で入力してください。');
+          return;
+        }
+        if (!staffId || isNaN(staffId) || staffId < 1 || staffId > 999999) {
+          setError('※1から999999までの数字を入力してください。');
+          return;
+        }
+        onLogin(staffId);
+      };
+
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#002868] to-[#004098] p-4 relative overflow-hidden">
+          <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-yellow-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+
+          <div className="z-10 w-full max-w-lg flex flex-col items-center">
+            <div className="mb-10 text-center float-anim flex flex-col items-center w-full">
+              <svg className="w-16 h-16 text-yellow-400 mb-2 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
+              </svg>
+              <h1 className="font-black logo-text tracking-wider mb-2 flex flex-col items-center gap-1">
+                <span className="text-2xl md:text-3xl lg:text-4xl">目指せ！！</span>
+                <span className="text-4xl md:text-5xl lg:text-6xl whitespace-nowrap">コンサルマスター！！</span>
+              </h1>
+              <p className="text-blue-200 text-sm md:text-base font-bold tracking-widest uppercase mt-2">
+                - Nojima Consultant Master -
+              </p>
+            </div>
+
+            <div className="glass-card w-full rounded-3xl p-8 border border-white/20">
+              <form onSubmit={handleLogin} className="space-y-6">
+                <div>
+                  <label className="block text-[#004098] font-bold mb-2 text-lg">
+                    担当者番号でログイン
+                  </label>
+                  <p className="text-sm text-red-500 mb-2 font-bold">※0を抜いた数字を入力してください</p>
+                  <input
+                    type="number"
+                    value={staffId}
+                    onChange={(e) => setStaffId(e.target.value)}
+                    placeholder="例: 12345"
+                    className="w-full px-4 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#004098] focus:ring-2 focus:ring-blue-200 transition-all text-center font-bold text-gray-700"
+                  />
+                </div>
+                {error && <p className="text-red-500 text-sm font-bold text-center">{error}</p>}
+                <button
+                  type="submit"
+                  className="w-full py-4 bg-gradient-to-r from-[#004098] to-[#0052c2] text-white rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
+                >
+                  ログインして開始
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const RegistrationForm = ({ onSubmit, currentUser }) => {
+      const [formData, setFormData] = useState({
+        maker: '', name: '', model: '',
+        feature1: '', feature2: '', feature3: '',
+        talk1: '', talk2: '', talk3: '',
+        feedbackTarget: ''
+      });
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        onSubmit({ ...formData, authorId: currentUser, feedbacks: [], id: Date.now() });
+        alert('登録が完了しました！経験値（レベル）が上がりました！');
+        setFormData({
+          maker: '', name: '', model: '',
+          feature1: '', feature2: '', feature3: '',
+          talk1: '', talk2: '', talk3: '',
+          feedbackTarget: ''
+        });
+      };
+
+      return (
+        <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h2 className="text-2xl font-bold text-[#004098] mb-6 border-b-2 border-[#004098] pb-2">商品知識を登録する</h2>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">メーカー名</label>
+                <input required type="text" className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none" value={formData.maker} onChange={e => setFormData({...formData, maker: e.target.value})} />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">商品名</label>
+                <input required type="text" className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">商品型番</label>
+                <input required type="text" className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none" value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} />
+              </div>
+            </div>
+
+            {[1, 2, 3].map(num => (
+              <div key={num} className="bg-blue-50 p-4 rounded-xl">
+                <h3 className="font-bold text-[#004098] mb-3">
+                  機能とトーク {num}
+                  {num === 3 && <span className="text-sm font-normal text-gray-500 ml-2">※任意</span>}
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">商品機能{num}</label>
+                    <input
+                      required={num !== 3}
+                      type="text"
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                      placeholder="例: 独自の省エネセンサー搭載"
+                      value={formData[`feature${num}`]}
+                      onChange={e => setFormData({...formData, [`feature${num}`]: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">機能からお客様へのトーク（使用効果{num}）</label>
+                    <textarea
+                      required={num !== 3}
+                      rows="2"
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                      placeholder="例: こちらのセンサーにより、毎月の電気代が約〇〇円お得になるんですよ！"
+                      value={formData[`talk${num}`]}
+                      onChange={e => setFormData({...formData, [`talk${num}`]: e.target.value})}
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200">
+              <label className="block text-sm font-bold text-gray-800 mb-2">フィードバックを依頼する（任意）</label>
+              <p className="text-xs text-gray-600 mb-2">アドバイスが欲しい担当者の番号を入力してください。相手に通知バッジが表示されます。</p>
+              <input type="number" placeholder="担当者番号 (例: 123)" className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none" value={formData.feedbackTarget} onChange={e => setFormData({...formData, feedbackTarget: e.target.value})} />
+            </div>
+
+            <button type="submit" className="w-full py-4 bg-[#004098] hover:bg-blue-800 text-white font-bold rounded-xl shadow-md transition-colors text-lg">
+              登録してレベルアップ！
+            </button>
+          </form>
+        </div>
+      );
+    };
+
+    const EditProductForm = ({ product, onSave, onCancel }) => {
+      const [formData, setFormData] = useState(product);
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        onSave(formData);
+      };
+
+      return (
+        <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-6 border-b-2 border-[#004098] pb-2">
+            <h2 className="text-2xl font-bold text-[#004098]">商品知識を編集する</h2>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">メーカー名</label>
+                <input required type="text" className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none" value={formData.maker} onChange={e => setFormData({...formData, maker: e.target.value})} />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">商品名</label>
+                <input required type="text" className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">商品型番</label>
+                <input required type="text" className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none" value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} />
+              </div>
+            </div>
+
+            {[1, 2, 3].map(num => (
+              <div key={num} className="bg-blue-50 p-4 rounded-xl">
+                <h3 className="font-bold text-[#004098] mb-3">
+                  機能とトーク {num}
+                  {num === 3 && <span className="text-sm font-normal text-gray-500 ml-2">※任意</span>}
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">商品機能{num}</label>
+                    <input
+                      required={num !== 3}
+                      type="text"
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                      value={formData[`feature${num}`] || ''}
+                      onChange={e => setFormData({...formData, [`feature${num}`]: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">機能からお客様へのトーク（使用効果{num}）</label>
+                    <textarea
+                      required={num !== 3}
+                      rows="2"
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                      value={formData[`talk${num}`] || ''}
+                      onChange={e => setFormData({...formData, [`talk${num}`]: e.target.value})}
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200">
+              <label className="block text-sm font-bold text-gray-800 mb-2">フィードバックを依頼する（任意）</label>
+              <input type="number" className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none" value={formData.feedbackTarget || ''} onChange={e => setFormData({...formData, feedbackTarget: e.target.value})} />
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <button type="button" onClick={onCancel} className="w-1/3 py-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl transition-colors">
+                キャンセル
+              </button>
+              <button type="submit" className="w-2/3 py-4 bg-[#004098] hover:bg-blue-800 text-white font-bold rounded-xl shadow-md transition-colors text-lg">
+                変更を保存する
+              </button>
+            </div>
+          </form>
+        </div>
+      );
+    };
+
+    const SearchView = ({ products }) => {
+      const [query, setQuery] = useState('');
+
+      const filtered = products.filter(p =>
+        p.name.includes(query) || p.model.includes(query) || p.maker.includes(query)
+      );
+
+      return (
+        <div className="max-w-5xl mx-auto space-y-6">
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex gap-4 items-center">
+            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input
+              type="text"
+              placeholder="メーカー名、商品名、型番で検索..."
+              className="flex-1 text-lg outline-none"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {filtered.map(p => (
+              <div key={p.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <span className="text-xs font-bold bg-blue-100 text-[#004098] px-2 py-1 rounded mb-2 inline-block">{p.maker}</span>
+                    <h3 className="text-xl font-bold text-gray-800">{p.name}</h3>
+                    <p className="text-gray-500 text-sm">型番: {p.model}</p>
+                  </div>
+                  <span className="text-xs text-gray-400">作成者: {p.authorId}</span>
+                </div>
+                <div className="space-y-4">
+                  {[1, 2, 3].map(num => (
+                    (p[`feature${num}`] || p[`talk${num}`]) && (
+                      <div key={num} className="bg-gray-50 p-3 rounded-lg text-sm">
+                        <p className="font-bold text-[#004098] mb-1">機能{num}: {p[`feature${num}`]}</p>
+                        <p className="text-gray-700">🗣️ {p[`talk${num}`]}</p>
+                      </div>
+                    )
+                  ))}
+                </div>
+              </div>
+            ))}
+            {filtered.length === 0 && (
+              <div className="col-span-full text-center text-gray-500 py-10">見つかりませんでした。</div>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    const MyPage = ({ products, currentUser, onAddFeedback, onAddReply, onDeleteProduct, onUpdateProduct, unrepliedFbCount, pendingRequestCount }) => {
+      const [activeSubTab, setActiveSubTab] = useState('myProducts');
+      const [selectedProductId, setSelectedProductId] = useState(null);
+      const [isEditing, setIsEditing] = useState(false);
+      const [feedbackInput, setFeedbackInput] = useState({});
+      const [replyInput, setReplyInput] = useState({});
+
+      const myProducts = products.filter(p => p.authorId === currentUser);
+      const requestedProducts = products.filter(p =>
+        p.feedbackTarget === currentUser || (p.feedbacks && p.feedbacks.some(f => f.senderId === currentUser))
+      );
+
+      const myLevel = myProducts.length + 1;
+
+      const handleTabChange = (tab) => {
+        setActiveSubTab(tab);
+        setSelectedProductId(null);
+        setIsEditing(false);
+      };
+
+      const handleSelectProduct = (id) => {
+        setSelectedProductId(id);
+        setIsEditing(false);
+      };
+
+      const submitFeedback = (productId) => {
+        if (!feedbackInput[productId]) return;
+        onAddFeedback(productId, feedbackInput[productId]);
+        setFeedbackInput({ ...feedbackInput, [productId]: '' });
+      };
+
+      const submitReply = (productId, feedbackId) => {
+        if (!replyInput[feedbackId]) return;
+        onAddReply(productId, feedbackId, replyInput[feedbackId]);
+        setReplyInput({ ...replyInput, [feedbackId]: '' });
+      };
+
+      const handleDelete = (id) => {
+        if (window.confirm('本当にこの商品データを削除しますか？\n（※一度削除すると元に戻せません）')) {
+          onDeleteProduct(id);
+          setSelectedProductId(null);
+        }
+      };
+
+      if (selectedProductId) {
+        const p = products.find(prod => prod.id === selectedProductId);
+        if (!p) return null;
+
+        if (isEditing && p.authorId === currentUser) {
+          return (
+            <div className="max-w-4xl mx-auto space-y-6">
+              <EditProductForm
+                product={p}
+                onSave={(updated) => {
+                  onUpdateProduct(updated);
+                  setIsEditing(false);
+                  alert('編集内容を保存しました！');
+                }}
+                onCancel={() => setIsEditing(false)}
+              />
+            </div>
+          );
+        }
+
+        return (
+          <div className="max-w-4xl mx-auto space-y-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <button
+                onClick={() => { setSelectedProductId(null); setIsEditing(false); }}
+                className="text-[#004098] font-bold flex items-center gap-2 hover:underline bg-white px-4 py-2 rounded-lg shadow-sm"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                一覧に戻る
+              </button>
+
+              {p.authorId === currentUser && activeSubTab === 'myProducts' && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="px-4 py-2 bg-blue-100 text-[#004098] rounded-lg font-bold hover:bg-blue-200 flex items-center gap-1 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    編集
+                  </button>
+                  <button
+                    onClick={() => handleDelete(p.id)}
+                    className="px-4 py-2 bg-red-100 text-red-600 rounded-lg font-bold hover:bg-red-200 flex items-center gap-1 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    削除
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+              <div className="mb-8">
+                <span className="text-xs font-bold bg-blue-100 text-[#004098] px-2 py-1 rounded mb-3 inline-block">{p.maker}</span>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">{p.name}</h2>
+                <p className="text-gray-500 font-bold">型番: {p.model}</p>
+                {activeSubTab === 'requests' && (
+                  <p className="text-sm text-yellow-600 font-bold mt-2 bg-yellow-50 inline-block px-3 py-1 rounded-full border border-yellow-200">
+                    作成者: {p.authorId}
+                  </p>
+                )}
+              </div>
+
+              <h3 className="text-xl font-bold text-[#004098] mb-4 border-b-2 border-[#004098] pb-2">勉強内容（機能とトーク）</h3>
+              <div className="space-y-4 mb-10">
+                {[1, 2, 3].map(num => (
+                  (p[`feature${num}`] || p[`talk${num}`]) && (
+                    <div key={num} className="bg-gray-50 p-5 rounded-xl border border-gray-100">
+                      <p className="font-bold text-[#004098] mb-2 text-lg">機能{num}： {p[`feature${num}`]}</p>
+                      <p className="text-gray-700 leading-relaxed bg-white p-3 rounded-lg border border-gray-200">
+                        <span className="text-xl mr-2">🗣️</span>{p[`talk${num}`]}
+                      </p>
+                    </div>
+                  )
+                ))}
+              </div>
+
+              <h3 className="text-xl font-bold text-[#004098] mb-4 border-b-2 border-[#004098] pb-2">フィードバック</h3>
+
+              {activeSubTab === 'myProducts' ? (
+                <div className="space-y-4">
+                  {p.feedbacks && p.feedbacks.length > 0 ? (
+                    p.feedbacks.map(fb => (
+                      <div key={fb.id} className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 relative">
+                        {!fb.reply && (
+                          <span className="absolute -top-3 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-bounce shadow-md">
+                            未返信
+                          </span>
+                        )}
+                        <p className="font-bold text-[#004098] mb-2">担当者: {fb.senderId} からのアドバイス</p>
+                        <p className="text-gray-800 mb-4 bg-white p-3 rounded-lg border border-gray-200">{fb.text}</p>
+
+                        {fb.reply ? (
+                          <div className="bg-white p-4 rounded-lg border-l-4 border-[#004098] shadow-sm">
+                            <p className="text-xs font-bold text-gray-500 mb-1">あなたの返信:</p>
+                            <p className="text-gray-800 font-bold">{fb.reply}</p>
+                          </div>
+                        ) : (
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="返信を入力..."
+                              className="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#004098]"
+                              value={replyInput[fb.id] || ''}
+                              onChange={e => setReplyInput({...replyInput, [fb.id]: e.target.value})}
+                            />
+                            <button
+                              onClick={() => submitReply(p.id, fb.id)}
+                              className="bg-[#004098] text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-800 transition-colors"
+                            >
+                              返信する
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-center py-4">まだフィードバックはありません。</p>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  {p.feedbacks && p.feedbacks.filter(f => f.senderId === currentUser).map(fb => (
+                    <div key={fb.id} className="mb-4 bg-yellow-50 p-4 rounded-xl border border-yellow-200">
+                      <p className="font-bold text-yellow-800 mb-2">あなたが送信したフィードバック:</p>
+                      <p className="text-gray-800 bg-white p-3 rounded-lg border border-yellow-100 mb-3">{fb.text}</p>
+
+                      {fb.reply && (
+                        <div className="bg-white p-4 rounded-lg border-l-4 border-yellow-500 shadow-sm">
+                          <p className="text-xs font-bold text-gray-500 mb-1">担当者 {p.authorId} からの返信:</p>
+                          <p className="text-gray-800 font-bold">{fb.reply}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  <div className="mt-6 flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      placeholder="この商品知識にアドバイスを送る..."
+                      className="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                      value={feedbackInput[p.id] || ''}
+                      onChange={e => setFeedbackInput({...feedbackInput, [p.id]: e.target.value})}
+                    />
+                    <button
+                      onClick={() => submitFeedback(p.id)}
+                      className="bg-yellow-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-yellow-600 transition-colors whitespace-nowrap"
+                    >
+                      FBを送信
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="bg-gradient-to-r from-[#004098] to-blue-600 rounded-2xl p-8 text-white shadow-lg flex items-center justify-between">
+            <div>
+              <p className="text-blue-200 font-bold mb-1">担当者番号: {currentUser}</p>
+              <h2 className="text-3xl font-black">マイページ</h2>
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-bold text-blue-200">現在のレベル</p>
+              <div className="text-5xl font-black text-yellow-400 drop-shadow-md">Lv.{myLevel}</div>
+            </div>
+          </div>
+
+          <div className="flex border-b border-gray-200 mb-4 overflow-x-auto">
+            <button
+              onClick={() => handleTabChange('myProducts')}
+              className={`px-6 py-3 font-bold transition-colors whitespace-nowrap flex items-center gap-2 ${activeSubTab === 'myProducts' ? 'border-b-4 border-[#004098] text-[#004098]' : 'text-gray-500 hover:text-gray-800'}`}
+            >
+              登録データ (FB確認・返信)
+              {unrepliedFbCount > 0 && (
+                <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full shadow-sm animate-pulse">{unrepliedFbCount}</span>
+              )}
+            </button>
+            <button
+              onClick={() => handleTabChange('requests')}
+              className={`px-6 py-3 font-bold transition-colors whitespace-nowrap flex items-center gap-2 ${activeSubTab === 'requests' ? 'border-b-4 border-yellow-500 text-[#004098]' : 'text-gray-500 hover:text-gray-800'}`}
+            >
+              FB依頼・送信履歴
+              {pendingRequestCount > 0 && (
+                <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full shadow-sm animate-pulse">{pendingRequestCount}</span>
+              )}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {activeSubTab === 'myProducts' && (
+              <>
+                {myProducts.length === 0 && <p className="text-gray-500 col-span-full py-8 text-center">まだ登録データがありません。</p>}
+                {myProducts.map(p => {
+                  const pUnrepliedCount = (p.feedbacks || []).filter(f => !f.reply).length;
+                  return (
+                    <div
+                      key={p.id}
+                      onClick={() => handleSelectProduct(p.id)}
+                      className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all group flex justify-between items-center relative"
+                    >
+                      <div>
+                        <span className="text-xs font-bold bg-blue-50 text-[#004098] px-2 py-1 rounded mb-2 inline-block">{p.maker}</span>
+                        <h4 className="font-bold text-lg group-hover:text-[#004098] transition-colors">{p.name}</h4>
+                        <p className="text-sm text-gray-500">{p.model}</p>
+
+                        {p.feedbacks && p.feedbacks.length > 0 && (
+                          <p className="text-xs font-bold text-[#004098] mt-3 bg-blue-50 inline-block px-2 py-1 rounded">
+                            💬 フィードバック {p.feedbacks.length}件
+                          </p>
+                        )}
+                        {pUnrepliedCount > 0 && (
+                          <span className="text-xs font-bold text-white bg-red-500 mt-3 inline-block px-2 py-1 rounded ml-2 shadow-sm">
+                            未返信 {pUnrepliedCount}件
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-gray-300 group-hover:text-[#004098] group-hover:translate-x-1 transition-all">
+                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            )}
+
+            {activeSubTab === 'requests' && (
+              <>
+                {requestedProducts.length === 0 && <p className="text-gray-500 col-span-full py-8 text-center">あなた宛のフィードバック依頼や履歴はありません。</p>}
+                {requestedProducts.map(p => {
+                  const hasReplied = (p.feedbacks || []).some(f => f.senderId === currentUser);
+                  const needsAction = p.feedbackTarget === currentUser && !hasReplied;
+
+                  return (
+                    <div
+                      key={p.id}
+                      onClick={() => handleSelectProduct(p.id)}
+                      className="bg-white p-5 rounded-xl shadow-sm border border-yellow-200 cursor-pointer hover:shadow-md hover:border-yellow-400 transition-all group flex justify-between items-center"
+                    >
+                      <div>
+                        <span className="text-xs font-bold bg-yellow-100 text-yellow-800 px-2 py-1 rounded mb-2 inline-block">依頼元: {p.authorId}</span>
+                        <h4 className="font-bold text-lg group-hover:text-yellow-600 transition-colors">{p.name}</h4>
+                        <p className="text-sm text-gray-500">{p.maker} / {p.model}</p>
+
+                        {hasReplied ? (
+                          <p className="text-xs font-bold text-yellow-600 mt-3 bg-yellow-50 inline-block px-2 py-1 rounded">
+                            ✅ FB送信済み
+                          </p>
+                        ) : needsAction ? (
+                          <p className="text-xs font-bold text-white bg-red-500 mt-3 inline-block px-2 py-1 rounded shadow-sm">
+                            🚨 FB依頼が来ています！
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="text-gray-300 group-hover:text-yellow-500 group-hover:translate-x-1 transition-all">
+                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    const RankingView = ({ products }) => {
+      const userCounts = products.reduce((acc, p) => {
+        acc[p.authorId] = (acc[p.authorId] || 0) + 1;
+        return acc;
+      }, {});
+
+      const ranking = Object.entries(userCounts)
+        .map(([id, count]) => ({ id, level: count + 1 }))
+        .sort((a, b) => b.level - a.level);
+
+      const getMedalColor = (index) => {
+        if (index === 0) return 'bg-yellow-400 text-yellow-900';
+        if (index === 1) return 'bg-gray-300 text-gray-800';
+        if (index === 2) return 'bg-amber-600 text-white';
+        return 'bg-blue-100 text-blue-800';
+      };
+
+      return (
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-[#004098] p-6 text-white text-center">
+              <h2 className="text-2xl font-black tracking-wider">マスターランキング</h2>
+              <p className="text-sm text-blue-200 mt-1">知識を共有してトップを目指そう！</p>
+            </div>
+            <div className="p-0">
+              {ranking.map((user, index) => (
+                <div key={user.id} className="flex items-center p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black mr-4 ${getMedalColor(index)}`}>
+                    {index + 1}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-500 font-bold">担当者番号</p>
+                    <p className="text-lg font-bold text-gray-800">{user.id}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-500 font-bold">レベル</p>
+                    <p className="text-2xl font-black text-[#004098]">Lv.{user.level}</p>
+                  </div>
+                </div>
+              ))}
+              {ranking.length === 0 && <p className="p-8 text-center text-gray-500">まだランキングデータがありません。</p>}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    function App() {
+      const [currentUser, setCurrentUser] = useState(null);
+      const [activeTab, setActiveTab] = useState('search');
+      const [products, setProducts] = useState(() => {
+        const saved = localStorage.getItem('consulMasterData');
+        return saved ? JSON.parse(saved) : [];
+      });
+
+      useEffect(() => {
+        localStorage.setItem('consulMasterData', JSON.stringify(products));
+      }, [products]);
+
+      const handleAddProduct = (newProduct) => setProducts([newProduct, ...products]);
+
+      const handleAddFeedback = (productId, text) => {
+        setProducts(products.map(p => {
+          if (p.id === productId) {
+            const newFeedback = { id: Date.now(), senderId: currentUser, text, reply: '' };
+            return { ...p, feedbacks: [...(p.feedbacks || []), newFeedback] };
+          }
+          return p;
+        }));
+      };
+
+      const handleAddReply = (productId, feedbackId, text) => {
+        setProducts(products.map(p => {
+          if (p.id === productId) {
+            return {
+              ...p,
+              feedbacks: p.feedbacks.map(f => f.id === feedbackId ? { ...f, reply: text } : f)
+            };
+          }
+          return p;
+        }));
+      };
+
+      const handleDeleteProduct = (productId) => setProducts(products.filter(p => p.id !== productId));
+
+      const handleUpdateProduct = (updatedProduct) => {
+        setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+      };
+
+      if (!currentUser) {
+        return (
+          <>
+            <style>{customStyles}</style>
+            <LoginScreen onLogin={setCurrentUser} />
+          </>
+        );
+      }
+
+      const myLevel = products.filter(p => p.authorId === currentUser).length + 1;
+
+      const unrepliedFbCount = products
+        .filter(p => p.authorId === currentUser)
+        .reduce((acc, p) => acc + (p.feedbacks ? p.feedbacks.filter(f => !f.reply).length : 0), 0);
+
+      const pendingRequestCount = products
+        .filter(p => p.feedbackTarget === currentUser)
+        .reduce((acc, p) => {
+          const hasReplied = p.feedbacks && p.feedbacks.some(f => f.senderId === currentUser);
+          return acc + (hasReplied ? 0 : 1);
+        }, 0);
+
+      const totalNotifications = unrepliedFbCount + pendingRequestCount;
+
+      return (
+        <>
+          <style>{customStyles}</style>
+          <div className="min-h-screen bg-blue-50/50">
+            <header className="bg-[#004098] text-white p-4 shadow-md sticky top-0 z-50">
+              <div className="max-w-6xl mx-auto flex justify-between items-center">
+                <h1 className="text-xl md:text-2xl font-black logo-text flex items-center gap-2">
+                   <svg className="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5z" /></svg>
+                   コンサルマスター
+                </h1>
+                <div className="flex items-center gap-4 text-sm md:text-base">
+                  <span className="font-bold">担当者: {currentUser}</span>
+                  <span className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full font-black">Lv.{myLevel}</span>
+                  <button onClick={() => setCurrentUser(null)} className="text-blue-200 hover:text-white text-sm underline">ログアウト</button>
+                </div>
+              </div>
+            </header>
+
+            <div className="bg-white border-b shadow-sm sticky top-[68px] z-40">
+              <div className="max-w-6xl mx-auto flex overflow-x-auto">
+                {[
+                  { id: 'search', label: '商品検索' },
+                  { id: 'register', label: '商品登録' },
+                  { id: 'mypage', label: 'マイページ', badge: totalNotifications },
+                  { id: 'ranking', label: 'ランキング' }
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex-1 py-4 px-3 sm:px-6 font-bold text-center whitespace-nowrap border-b-4 transition-colors relative flex items-center justify-center gap-2 ${
+                      activeTab === tab.id ? 'border-[#004098] text-[#004098]' : 'border-transparent text-gray-500 hover:text-gray-800 hover:bg-gray-50'
+                    }`}
+                  >
+                    {tab.label}
+                    {tab.badge > 0 && (
+                      <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-pulse shadow-sm">
+                        {tab.badge}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <main className="max-w-6xl mx-auto p-4 md:p-8">
+              {activeTab === 'register' && <RegistrationForm onSubmit={handleAddProduct} currentUser={currentUser} />}
+              {activeTab === 'search' && <SearchView products={products} />}
+              {activeTab === 'mypage' && (
+                <MyPage
+                  products={products}
+                  currentUser={currentUser}
+                  onAddFeedback={handleAddFeedback}
+                  onAddReply={handleAddReply}
+                  onDeleteProduct={handleDeleteProduct}
+                  onUpdateProduct={handleUpdateProduct}
+                  unrepliedFbCount={unrepliedFbCount}
+                  pendingRequestCount={pendingRequestCount}
+                />
+              )}
+              {activeTab === 'ranking' && <RankingView products={products} />}
+            </main>
+          </div>
+        </>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
